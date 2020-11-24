@@ -39,7 +39,8 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'rest_framework',
-    'geolocalizer.geolocalizer.apps.GeolocalizerConfig'
+    'geolocalizer.geolocalizer',
+    # 'geolocalizer.geolocalizer.apps.GeolocalizerConfig',
 ]
 
 MIDDLEWARE = [
