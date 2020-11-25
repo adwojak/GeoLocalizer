@@ -5,12 +5,22 @@ from django.db.models import (
     BooleanField,
     GenericIPAddressField,
     CharField,
+    ForeignKey,
+    ManyToManyField,
+    CASCADE,
 )
+
+
+class LanguageModel(Model):
+    code = CharField(max_length=10)
+    name = CharField(max_length=100)
+    native = CharField(max_length=100)
 
 
 class LocationModel(Model):
     geoname_id = IntegerField()
     capital = CharField(max_length=100)
+    languages = ManyToManyField(LanguageModel)
     country_flag = CharField(max_length=500)
     country_flag_emoji = CharField(max_length=10)
     country_flag_emoji_unicode = CharField(max_length=70)
@@ -35,38 +45,7 @@ class GeolocationModel(Model):
     zip = CharField(max_length=10)
     latitude = FloatField()
     longitude = FloatField()
-    location = LocationModel()
+    location = ForeignKey(LocationModel, CASCADE)
 
     def __repr__(self):
         return 'bb'
-
-# a = {
-#     'ip': '2607:f8b0:4005:804::2004',
-#     'type': 'ipv6',
-#     'continent_code': 'NA',
-#     'continent_name':'North America',
-#     'country_code': 'US',
-#     'country_name': 'United States',
-#     'region_code': 'CA',
-#     'region_name': 'California',
-#     'city': 'Mountain View',
-#     'zip': '94043',
-#     'latitude': 37.38801956176758,
-#     'longitude': -122.07431030273438,
-#     'location': {
-#         'geoname_id': 5375480,
-#         'capital': 'Washington D.C.',
-#         'languages': [
-#             {
-#                 'code': 'en',
-#                 'name': 'English',
-#                 'native': 'English'
-#             }
-#         ],
-#         'country_flag': 'http://assets.ipstack.com/flags/us.svg',
-#         'country_flag_emoji': '🇺🇸',
-#         'country_flag_emoji_unicode': 'U+1F1FA U+1F1F8',
-#         'calling_code': '1',
-#         'is_eu': False
-#     }
-# }
