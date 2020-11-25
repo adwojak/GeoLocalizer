@@ -1,5 +1,7 @@
-from rest_framework.serializers import HyperlinkedModelSerializer
+from rest_framework.serializers import HyperlinkedModelSerializer, Serializer, CharField, ListField, ValidationError
 from geolocalizer.geolocalizer.models import GeolocationModel, LocationModel, LanguageModel
+from geolocalizer.libs.validators import validate_address
+from geolocalizer.libs.errors import ADDRESS_NOT_VALID, ADDRESSES_NOT_VALID
 
 
 class LanguageSerializer(HyperlinkedModelSerializer):
@@ -46,3 +48,17 @@ class GeolocationSerializer(HyperlinkedModelSerializer):
             return self.Meta.model.objects.get_or_create(**validated_data)[0]
         except self.Meta.model.MultipleObjectsReturned:
             return self.Meta.model.objects.filter(**validated_data).first()
+
+
+class AddressSerializer(Serializer):
+    address = ListField(child=CharField(max_length=300))
+
+    def validate(self, data):
+        bad_addresses = []
+        for address in dict(data)['address']:
+            if not validate_address(address):
+                bad_addresses.append(address)
+        if bad_addresses:
+            error_message = ADDRESS_NOT_VALID if len(bad_addresses) == 1 else ADDRESSES_NOT_VALID
+            raise ValidationError({'address': error_message.format(', '.join(bad_addresses))})
+        return data
