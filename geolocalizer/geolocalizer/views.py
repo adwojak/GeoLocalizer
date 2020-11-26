@@ -1,8 +1,10 @@
-from rest_framework.viewsets import ModelViewSet, GenericViewSet
-from rest_framework.mixins import ListModelMixin
+from rest_framework.viewsets import ModelViewSet, GenericViewSet, ReadOnlyModelViewSet
+from rest_framework.mixins import ListModelMixin, UpdateModelMixin
 from rest_framework.response import Response
 from rest_framework.renderers import JSONRenderer
 from geolocalizer.libs.renderers import BrowsableAPIRendererWithOtherInputContent
+from geolocalizer.libs.response import ErrorResponse
+from geolocalizer.libs.errors import DATA_NOT_FOUND
 from geolocalizer.geolocalizer.models import LocationModel, LanguageModel, GeolocationModel
 from geolocalizer.geolocalizer.serializers import (
     LocationSerializer,
@@ -19,17 +21,17 @@ class GeolocationViewSet(ModelViewSet):
     serializer_class = GeolocationSerializer
 
 
-class LocationViewSet(ModelViewSet):
+class LocationViewSet(ReadOnlyModelViewSet, UpdateModelMixin):
     queryset = LocationModel.objects.all()
     serializer_class = LocationSerializer
 
 
-class LanguageViewSet(ModelViewSet):
+class LanguageViewSet(ReadOnlyModelViewSet, UpdateModelMixin):
     queryset = LanguageModel.objects.all()
     serializer_class = LanguageSerializer
 
 
-class AddAddress(GenericViewSet, ListModelMixin):
+class AddAddressViewSet(GenericViewSet, ListModelMixin):
     queryset = GeolocationModel.objects.all()
     serializer_class = GeolocationDescriptionSerializer
     input_serializer_class = (AddressSerializer, ['POST'])
@@ -41,9 +43,8 @@ class AddAddress(GenericViewSet, ListModelMixin):
             return Response(serializer.errors)
         address = serializer.validated_data['address']
         ipstack_data = fetch_ipstack(address, omit_validation=True)
+        if ipstack_data['continent_name'] is None:
+            return ErrorResponse(DATA_NOT_FOUND.format(address))
         geolocation_model = GeolocationSerializer().create(ipstack_data)
         geolocation_data = GeolocationSerializer(geolocation_model, context={'request': request}).data
         return Response(geolocation_data)
-
-# {"address":"www.google.com"}
-# url, continent_name, country_name, region_name, city, ip

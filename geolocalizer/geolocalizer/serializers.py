@@ -35,6 +35,14 @@ class LocationSerializer(HyperlinkedModelSerializer):
         except self.Meta.model.MultipleObjectsReturned:
             return self.Meta.model.objects.filter(**validated_data).first()
 
+    def update(self, instance, validated_data):
+        languages = validated_data.pop('languages')
+        instance = super(LocationSerializer, self).update(instance, validated_data)
+        language_models = LanguageSerializer(many=True).create(languages)
+        instance.languages.set(language_models)
+        instance.save()
+        return instance
+
 
 class GeolocationSerializer(HyperlinkedModelSerializer):
     location = LocationSerializer()
@@ -52,6 +60,10 @@ class GeolocationSerializer(HyperlinkedModelSerializer):
             return self.Meta.model.objects.create(location=location_model, **validated_data)
         except self.Meta.model.MultipleObjectsReturned:
             return self.Meta.model.objects.filter(**validated_data).first()
+
+    def update(self, instance, validated_data):
+        validated_data['location'] = LocationSerializer().create(validated_data['location'])
+        return super(GeolocationSerializer, self).update(instance, validated_data)
 
 
 class GeolocationDescriptionSerializer(HyperlinkedModelSerializer):

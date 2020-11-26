@@ -4,10 +4,10 @@ from geolocalizer.geolocalizer import views
 
 
 router = DefaultRouter()
-router.register(r'locations', views.LocationViewSet)
 router.register(r'languages', views.LanguageViewSet)
+router.register(r'locations', views.LocationViewSet)
 router.register(r'geolocations', views.GeolocationViewSet)
-router.register(r'fetch-address', views.AddAddress, basename='address')
+router.register(r'fetch-address', views.AddAddressViewSet, basename='fetch-address')
 
 urlpatterns = [
     path('', include(router.urls)),
