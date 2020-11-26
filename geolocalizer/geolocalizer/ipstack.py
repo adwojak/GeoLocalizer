@@ -1,7 +1,9 @@
 from os import getenv
-from requests import get as rget
+from requests import get as rget, ConnectionError
 from geolocalizer.constants import IPSTACK_API_KEY, IPSTACK_API_URL
 from geolocalizer.libs.validators import validate_address
+from geolocalizer.libs.errors import IPSTACK_UNAVAILAVLE, ADDRESS_NOT_VALID
+from geolocalizer.libs.exceptions import BadAddressError
 
 
 def _get_url(address: str) -> str:
@@ -9,7 +11,10 @@ def _get_url(address: str) -> str:
 
 
 def _fetch_ipstack(address: str) -> dict:
-    return rget(_get_url(address)).json()
+    try:
+        return rget(_get_url(address)).json()
+    except ConnectionError:
+        raise ConnectionError(IPSTACK_UNAVAILAVLE)
 
 
 def fetch_ipstack(address: str, omit_validation: bool = False) -> dict:
@@ -17,5 +22,5 @@ def fetch_ipstack(address: str, omit_validation: bool = False) -> dict:
         return _fetch_ipstack(address)
     else:
         if not validate_address(address):
-            raise NotImplementedError
+            raise BadAddressError(ADDRESS_NOT_VALID.format(address))
         return _fetch_ipstack(address)

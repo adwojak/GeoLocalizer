@@ -11,17 +11,23 @@ https://docs.djangoproject.com/en/3.1/ref/settings/
 """
 
 from pathlib import Path
+from os import getenv, path
+from dotenv import load_dotenv
+from geolocalizer.constants import ENV_FILE_NAME, IPSTACK_API_KEY, DJANGO_SECRET_KEY, APPLICATION_NAME
+
+BASE_DIR = Path(__file__).resolve().parent.parent
+APP_NAME = APPLICATION_NAME
+
+if not getenv(IPSTACK_API_KEY):
+    env_path = path.join(BASE_DIR, APP_NAME, ENV_FILE_NAME)
+    load_dotenv(dotenv_path=env_path)
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
-BASE_DIR = Path(__file__).resolve().parent.parent
-APP_NAME = 'geolocalizer'
-
-
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/3.1/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = '+3o057$+32)sjzy=eky2#oqsv+8z*&v4_rksij*ag%pkrbn@y+'
+SECRET_KEY = getenv(DJANGO_SECRET_KEY)
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
@@ -39,8 +45,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'rest_framework',
-    # 'geolocalizer.geolocalizer',
-    'geolocalizer.geolocalizer.apps.GeolocalizerConfig',
+    'geolocalizer.geolocalizer',
 ]
 
 MIDDLEWARE = [
@@ -126,5 +131,6 @@ STATIC_URL = '/static/'
 REST_FRAMEWORK = {
     'DEFAULT_PARSER_CLASSES': ['rest_framework.parsers.JSONParser'],
     'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
+    'EXCEPTION_HANDLER': 'geolocalizer.libs.exceptions.exception_handler',
     'PAGE_SIZE': 10
 }

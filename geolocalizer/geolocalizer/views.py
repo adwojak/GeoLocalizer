@@ -1,10 +1,11 @@
 from rest_framework.viewsets import ModelViewSet, GenericViewSet, ReadOnlyModelViewSet
 from rest_framework.mixins import ListModelMixin, UpdateModelMixin
+from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework.renderers import JSONRenderer
 from geolocalizer.libs.renderers import BrowsableAPIRendererWithOtherInputContent
-from geolocalizer.libs.response import ErrorResponse
 from geolocalizer.libs.errors import DATA_NOT_FOUND
+from geolocalizer.libs.exceptions import IpstackDataNotFoundError
 from geolocalizer.geolocalizer.models import LocationModel, LanguageModel, GeolocationModel
 from geolocalizer.geolocalizer.serializers import (
     LocationSerializer,
@@ -37,14 +38,14 @@ class AddAddressViewSet(GenericViewSet, ListModelMixin):
     input_serializer_class = (AddressSerializer, ['POST'])
     renderer_classes = (JSONRenderer, BrowsableAPIRendererWithOtherInputContent)
 
-    def create(self, request):
+    def create(self, request: Request) -> Response:
         serializer = AddressSerializer(data=request.data)
         if not serializer.is_valid():
             return Response(serializer.errors)
         address = serializer.validated_data['address']
         ipstack_data = fetch_ipstack(address, omit_validation=True)
         if ipstack_data['continent_name'] is None:
-            return ErrorResponse(DATA_NOT_FOUND.format(address))
+            raise IpstackDataNotFoundError(DATA_NOT_FOUND.format(address))
         geolocation_model = GeolocationSerializer().create(ipstack_data)
         geolocation_data = GeolocationSerializer(geolocation_model, context={'request': request}).data
         return Response(geolocation_data)
