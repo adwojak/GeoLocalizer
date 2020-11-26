@@ -16,6 +16,9 @@ class LanguageModel(Model):
     name = CharField(max_length=100)
     native = CharField(max_length=100)
 
+    def __repr__(self):
+        return self.__class__.__name__
+
 
 class LocationModel(Model):
     geoname_id = IntegerField()
@@ -28,7 +31,7 @@ class LocationModel(Model):
     is_eu = BooleanField()
 
     def __repr__(self):
-        return 'aa'
+        return self.__class__.__name__
 
 
 class GeolocationModel(Model):
@@ -42,10 +45,19 @@ class GeolocationModel(Model):
     region_code = CharField(max_length=8)
     region_name = CharField(max_length=100)
     city = CharField(max_length=100)
-    zip = CharField(max_length=10)
+    zip = CharField(max_length=10, blank=True, null=True)
     latitude = FloatField()
     longitude = FloatField()
     location = ForeignKey(LocationModel, CASCADE)
 
+    def get_description_info(self):
+        return {
+            'ip': self.ip,
+            'city': self.city,
+            'region_name': self.region_name,
+            'country_name': self.country_name,
+            'continent_name': self.continent_name,
+        }
+
     def __repr__(self):
-        return 'bb'
+        return self.__class__.__name__

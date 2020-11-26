@@ -44,10 +44,20 @@ class GeolocationSerializer(HyperlinkedModelSerializer):
         fields = '__all__'
 
     def create(self, validated_data):
+        location = validated_data.pop('location')
         try:
-            return self.Meta.model.objects.get_or_create(**validated_data)[0]
+            return self.Meta.model.objects.get(**validated_data)
+        except self.Meta.model.DoesNotExist:
+            location_model = LocationSerializer().create(location)
+            return self.Meta.model.objects.create(location=location_model, **validated_data)
         except self.Meta.model.MultipleObjectsReturned:
             return self.Meta.model.objects.filter(**validated_data).first()
+
+
+class GeolocationDescriptionSerializer(HyperlinkedModelSerializer):
+    class Meta:
+        model = GeolocationModel
+        fields = ['url', 'ip', 'city', 'region_name', 'country_name', 'continent_name']
 
 
 class AddressSerializer(Serializer):
