@@ -7,7 +7,7 @@ router = DefaultRouter()
 router.register(r'locations', views.LocationViewSet)
 router.register(r'languages', views.LanguageViewSet)
 router.register(r'geolocations', views.GeolocationViewSet)
-router.register(r'addresses', views.AddAddress, basename='address')
+router.register(r'fetch-address', views.AddAddress, basename='address')
 
 urlpatterns = [
     path('', include(router.urls)),

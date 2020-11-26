@@ -7,6 +7,7 @@ from geolocalizer.geolocalizer.serializers import(
     GeolocationSerializer,
     AddressSerializer,
 )
+from geolocalizer.geolocalizer.ipstack import fetch_ipstack
 
 
 class GeolocationViewSet(ModelViewSet):
@@ -34,5 +35,6 @@ class AddAddress(ViewSet):
         serializer = AddressSerializer(data=request.data)
         if not serializer.is_valid():
             return Response(serializer.errors)
-        # Send request to ipstack
-        return Response(serializer.data)
+        address = serializer.validated_data['address']
+        ipstack_data = fetch_ipstack(address, omit_validation=True)
+        return Response(ipstack_data)

@@ -1,35 +1,25 @@
-from dotenv import load_dotenv
-from os import getenv, path
+from os import getenv
 from requests import get as rget
-from typing import Tuple
-from geolocalizer.settings import BASE_DIR
-from geolocalizer.constants import APP_NAME, ENV_FILE_NAME, IPSTACK_API_KEY, IPSTACK_API_URL
+from geolocalizer.constants import IPSTACK_API_KEY, IPSTACK_API_URL
 from geolocalizer.libs.validators import validate_address
 
-env_path = path.join(BASE_DIR, APP_NAME, ENV_FILE_NAME)
-load_dotenv(dotenv_path=env_path)
+
+def _get_url(address: str) -> str:
+    return f'{IPSTACK_API_URL}{address}?access_key={getenv(IPSTACK_API_KEY)}'
 
 
-access_key = getenv(IPSTACK_API_KEY)
+def _fetch_ipstack(address: str) -> dict:
+    return rget(_get_url(address)).json()
 
 
-def validate_addresses(func):
-    def validate(*args):
-        for address in args:
-            if not validate_address(address):
-                raise NotImplementedError
-        return func(*args)
-    return validate
+def fetch_ipstack(address: str, omit_validation: bool = False) -> dict:
+    if omit_validation:
+        return _fetch_ipstack(address)
+    else:
+        if not validate_address(address):
+            raise NotImplementedError
+        return _fetch_ipstack(address)
 
-
-def _get_url(addresses_list: Tuple[str]) -> str:
-    joined_addresses_list = ','.join(addresses_list)
-    return f'{IPSTACK_API_URL}{joined_addresses_list}?access_key={access_key}'
-
-
-@validate_addresses
-def fetch_ipstack(*addresses_list: str) -> dict:
-    return rget(_get_url(addresses_list)).json()
 #
 # a = {
 #     'ip': '2607:f8b0:4005:804::2004',
