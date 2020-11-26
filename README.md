@@ -8,6 +8,8 @@
 
 * ./createapp.sh
 
+* Add yours Ipstack and django private keys to geolocalizer/.env
+
 * python manage.py runserver
 
 * In other tab: python initialfill.py
