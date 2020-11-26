@@ -1,5 +1,17 @@
 # GeoLocalizer
 
+**How to use**
+
+* Needed python3.8
+
+* chmod +x createapp.sh
+
+* ./createapp.sh
+
+* python manage.py runserver
+
+* In other tab: python initialfill.py
+
 Endpoints:
 
 * **/register/**
