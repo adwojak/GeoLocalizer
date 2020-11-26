@@ -1,7 +1,21 @@
 from rest_framework.serializers import HyperlinkedModelSerializer, Serializer, CharField, ValidationError
+from django.contrib.auth.models import User
 from geolocalizer.geolocalizer.models import GeolocationModel, LocationModel, LanguageModel
 from geolocalizer.libs.validators import validate_address
 from geolocalizer.libs.errors import ADDRESS_NOT_VALID
+
+
+class RegisterSerializer(HyperlinkedModelSerializer):
+    class Meta:
+        model = User
+        fields = ['username', 'password']
+
+    def create(self, validated_data):
+        raw_password = validated_data.pop('password')
+        instance = User(**validated_data)
+        instance.set_password(raw_password)
+        instance.save()
+        return instance
 
 
 class LanguageSerializer(HyperlinkedModelSerializer):
